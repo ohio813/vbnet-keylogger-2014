@@ -47,7 +47,6 @@ Public Class Hook
         WM_SYSKEYDOWN = &H104
         WM_SYSKEYUP = &H105
     End Enum
-
     <Flags()> Public Enum KBDLLHOOKSTRUCTFlags As UInt32
         LLKHF_EXTENDED = &H1
         LLKHF_INJECTED = &H10
