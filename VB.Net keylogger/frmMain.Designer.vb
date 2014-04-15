@@ -24,12 +24,12 @@ Partial Class frmMain
     Private Sub InitializeComponent()
         Me.SuspendLayout()
         '
-        'Form1
+        'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(555, 385)
-        Me.Name = "Form1"
+        Me.Name = "frmMain"
         Me.Text = "Form1"
         Me.ResumeLayout(False)
 
