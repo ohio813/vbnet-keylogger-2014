@@ -6,8 +6,9 @@
     Private Sub frmMain_Disposed(sender As Object, e As EventArgs) Handles Me.Disposed
         WinHook.UnHook(Hook.HookType.WH_KEYBOARD_LL)
     End Sub
+    Private Shared builder As New System.Text.StringBuilder
     Private Sub WinHook_KeyboardChange(nCode As Integer, wParam As Hook.WM_KEYBOARD_MSG, ByRef lParam As Hook.KBDLLHOOKSTRUCT, ByRef cancel As Boolean) Handles WinHook.KeyboardChange
-        Debug.Print("{5}>Hook_KeyboardChange: nCode={0}, wParam={1}, vkCode={2}, scanCode={3}, flags={4}, dwExtraInfo={6}", nCode, wParam.ToString, lParam.vkCode, lParam.scanCode, lParam.flags, DateTime.Now.AddTicks(lParam.time), lParam.dwExtraInfo)
+        ' Debug.Print("{5}>Hook_KeyboardChange: nCode={0}, wParam={1}, vkCode={2}, scanCode={3}, flags={4}, dwExtraInfo={6}", nCode, wParam.ToString, lParam.vkCode, lParam.scanCode, lParam.flags, DateTime.Now.AddTicks(lParam.time), lParam.dwExtraInfo)
 
         If wParam = Hook.WM_KEYBOARD_MSG.WM_KEYDOWN Or wParam = Hook.WM_KEYBOARD_MSG.WM_SYSKEYDOWN Then
             'If we can block events
@@ -31,7 +32,53 @@
                         cancel = True  'Block event
                 End Select
             End If
-        End If
 
+            Dim dwThreadID = GetWindowThreadProcessId(Win32API.GetForegroundWindow, vbNull)
+            Dim keyblayoutID As Integer = Win32API.GetKeyboardLayout(dwThreadID)
+            'I Disable MapVirtualKeyEx why crash need more check
+            'Dim ScanCode As Integer = Win32API.MapVirtualKeyEx(lParam.vkCode, 2, keyblayoutID)
+            Dim KeyState(256) As Byte
+            Dim result As Boolean = Win32API.GetKeyboardState(KeyState)
+
+            Dim FinalChar As New System.Text.StringBuilder(128)
+            Select Case Win32API.ToUnicodeEx(lParam.vkCode, lParam.scanCode, KeyState, FinalChar, FinalChar.Capacity, lParam.flags, keyblayoutID)
+                Case 1
+                    Select Case AscW(FinalChar.ToString)
+                        Case Keys.Return
+                            builder.Append("<" & Keys.Return.ToString & ">")
+                        Case Keys.Back
+                            builder.Append("<" & Keys.Back.ToString & ">")
+                        Case Keys.Tab
+                            builder.Append("<" & Keys.Tab.ToString & ">")
+                        Case Keys.Escape
+                            builder.Append("<" & Keys.Escape.ToString & ">")
+                        Case Else
+                            Dim keysDown As String = IIf(My.Computer.Keyboard.CtrlKeyDown, Keys.Control.ToString & " ", "")
+                            keysDown &= IIf(My.Computer.Keyboard.AltKeyDown, Keys.Alt.ToString & " ", "")
+                            keysDown &= IIf(My.Computer.Keyboard.ShiftKeyDown, Keys.Shift.ToString & " ", "")
+
+                            If keysDown.Length > 0 Then
+                                builder.Append("<" & keysDown & lParam.vkCode.ToString & ">")
+                            Else
+                                builder.Append(FinalChar.ToString)
+                            End If
+                    End Select
+                Case Else
+                    Select Case lParam.vkCode
+                        Case Keys.CapsLock, Keys.RShiftKey, Keys.LShiftKey, Keys.RControlKey, Keys.LControlKey, Keys.LMenu, Keys.RMenu
+                        Case Else
+                            Dim keysDown As String = IIf(My.Computer.Keyboard.CtrlKeyDown, Keys.Control.ToString & " ", "")
+                            keysDown &= IIf(My.Computer.Keyboard.AltKeyDown, Keys.Alt.ToString & " ", "")
+                            keysDown &= IIf(My.Computer.Keyboard.ShiftKeyDown, Keys.Shift.ToString & " ", "")
+
+                            If keysDown.Length > 0 Then
+                                builder.Append("<" & keysDown & lParam.vkCode.ToString & ">")
+                            Else
+                                builder.Append("<" & lParam.vkCode.ToString & ">")
+                            End If
+                    End Select
+            End Select
+            RichTextBox1.Text = builder.ToString
+        End If
     End Sub
 End Class
