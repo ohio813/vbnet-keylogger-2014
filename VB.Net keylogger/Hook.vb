@@ -45,7 +45,7 @@ Public Class Hook
         Select Case hookType
             Case Global.Hook.HookType.WH_KEYBOARD_LL
                 hookproc = AddressOf LowLevelKeyboardProc
-                hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_KEYBOARD_LL, hookproc, Process.GetCurrentProcess.MainModule.BaseAddress, 0))
+                hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_KEYBOARD_LL, hookproc, IntPtr.Zero, 0))
             Case Global.Hook.HookType.WH_MOUSE_LL
                 hookproc = AddressOf LowLevelMouseProc
                 hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_MOUSE_LL, hookproc, IntPtr.Zero, 0))
@@ -61,7 +61,6 @@ Public Class Hook
         End If
 
     End Sub
-
     Public Sub UnHook(hookType As HookType)
         If hHooks.ContainsKey(hookType) Then
             If UnhookWindowsHookEx(hHooks(hookType)).Equals(False) Then
@@ -87,10 +86,9 @@ Public Class Hook
         LLKHF_ALTDOWN = &H20
         LLKHF_UP = &H80
     End Enum
-
     ' KeyboardStruct structure declaration.
     <StructLayout(LayoutKind.Sequential)> Public Structure KBDLLHOOKSTRUCT
-        Public vkCode As VirtualKeysEnum.VirtualKeys
+        Public vkCode As Keys
         Public scanCode As UInt32
         Public flags As KBDLLHOOKSTRUCTFlags
         Public time As UInt32
