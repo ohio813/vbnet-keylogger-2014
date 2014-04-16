@@ -80,4 +80,46 @@ Public Class Hook
         End If
     End Function
 #End Region
+
+#Region "WH_MOUSE_LL"
+    Public Enum WM_MOUSE_MSG As UInt32
+        WM_MOUSEMOVE = &H200
+        WM_LBUTTONDOWN = &H201
+        WM_LBUTTONUP = &H202
+        WM_MOUSEWHEEL = &H20A
+        WM_MOUSEHWHEEL = &H20E
+        WM_RBUTTONDOWN = &H204
+        WM_RBUTTONUP = &H205
+        WM_MOUSEWHEELUP = 519
+        WM_MOUSEWHEELDOWN = 520
+    End Enum
+
+    'MouseHookStruct structure declaration.
+    <StructLayout(LayoutKind.Sequential)> Public Structure MSLLHOOKSTRUCT
+        Public pt As Drawing.Point
+        Public mouseData As UInt32
+        Public flags As UInt32
+        Public time As UInt32
+        Public dwExtraInfo As UInt64
+    End Structure
+
+    Public Event MouseChange(nCode As Integer, wParam As WM_MOUSE_MSG, lParam As MSLLHOOKSTRUCT, ByRef cancel As Boolean)
+    Private Function LowLevelMouseProc(ByVal nCode As Integer, ByVal wParam As Integer, ByVal lParam As IntPtr) As Integer
+
+        Dim cancel As Boolean = False
+
+        Dim myMouseHookStruct As New MSLLHOOKSTRUCT()
+        myMouseHookStruct = CType(Marshal.PtrToStructure(lParam, myMouseHookStruct.GetType()), MSLLHOOKSTRUCT)
+
+        RaiseEvent MouseChange(nCode, wParam, myMouseHookStruct, cancel)
+
+        If cancel = True Then
+            Return 1
+        Else
+            Return CallNextHookEx(hHooks(HookType.WH_MOUSE_LL), nCode, wParam, lParam)
+        End If
+
+    End Function
+#End Region
+
 End Class
