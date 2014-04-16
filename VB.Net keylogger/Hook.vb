@@ -39,6 +39,40 @@ Public Class Hook
     End Function
 
     Private hHooks As New Dictionary(Of HookType, Integer)
+    Private hookproc As CallBack
+    Public Sub Hook(hookType As HookType)
+        If hHooks.ContainsKey(hookType) Then Return
+        Select Case hookType
+            Case Global.Hook.HookType.WH_KEYBOARD_LL
+                hookproc = AddressOf LowLevelKeyboardProc
+                hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_KEYBOARD_LL, hookproc, Process.GetCurrentProcess.MainModule.BaseAddress, 0))
+            Case Global.Hook.HookType.WH_MOUSE_LL
+                hookproc = AddressOf LowLevelMouseProc
+                hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_MOUSE_LL, hookproc, IntPtr.Zero, 0))
+            Case Else
+                Throw New NotImplementedException()
+        End Select
+
+        If hHooks(hookType) = 0 Then
+            Debug.Print("SetWindowsHookEx {0}", hookType.ToString)
+            Return
+        Else
+            Debug.Print("SetWindowsHookEx {0}", hookType.ToString)
+        End If
+
+    End Sub
+
+    Public Sub UnHook(hookType As HookType)
+        If hHooks.ContainsKey(hookType) Then
+            If UnhookWindowsHookEx(hHooks(hookType)).Equals(False) Then
+                Debug.Print("UnhookWindowsHookEx {0}", hookType.ToString)
+                Return
+            Else
+                Debug.Print("UnhookWindowsHookEx {0}", hookType.ToString)
+                hHooks.Remove(hookType)
+            End If
+        End If
+    End Sub
 
 #Region "WH_KEYBOARD_LL"
     Public Enum WM_KEYBOARD_MSG
