@@ -30,7 +30,7 @@ Partial Class frmMain
         Me.RichTextBox1.Enabled = False
         Me.RichTextBox1.Location = New System.Drawing.Point(0, 0)
         Me.RichTextBox1.Name = "RichTextBox1"
-        Me.RichTextBox1.Size = New System.Drawing.Size(516, 228)
+        Me.RichTextBox1.Size = New System.Drawing.Size(572, 200)
         Me.RichTextBox1.TabIndex = 0
         Me.RichTextBox1.Text = ""
         '
@@ -38,8 +38,10 @@ Partial Class frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(528, 284)
+        Me.ClientSize = New System.Drawing.Size(584, 261)
         Me.Controls.Add(Me.RichTextBox1)
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
+        Me.MaximizeBox = False
         Me.Name = "frmMain"
         Me.Text = "Form1"
         Me.ResumeLayout(False)
