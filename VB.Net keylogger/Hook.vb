@@ -38,14 +38,14 @@ Public Class Hook
     End Function
 #End Region
     Private hHooks As New Dictionary(Of HookType, Integer)
+    Private Keyboardhookpro As CallBack = AddressOf LowLevelKeyboardProc
+    Private Mousehookproc As CallBack = AddressOf LowLevelMouseProc
     Public Sub Hook(hookType As HookType)
         If hHooks.ContainsKey(hookType) Then Return
         Select Case hookType
-            Case Global.Hook.HookType.WH_KEYBOARD_LL
-                Dim Keyboardhookpro As CallBack = AddressOf LowLevelKeyboardProc
+            Case hookType.WH_KEYBOARD_LL
                 hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_KEYBOARD_LL, Keyboardhookpro, IntPtr.Zero, 0))
-            Case Global.Hook.HookType.WH_MOUSE_LL
-                Dim Mousehookproc As CallBack = AddressOf LowLevelMouseProc
+            Case hookType.WH_MOUSE_LL
                 hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_MOUSE_LL, Mousehookproc, IntPtr.Zero, 0))
             Case Else
                 Throw New NotImplementedException()
