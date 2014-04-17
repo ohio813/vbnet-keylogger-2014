@@ -59,12 +59,11 @@
                         Dim keysDown As String = IIf(My.Computer.Keyboard.CtrlKeyDown, Keys.Control.ToString & " ", "")
                         keysDown &= IIf(My.Computer.Keyboard.AltKeyDown, Keys.Alt.ToString & " ", "")
                         keysDown &= IIf(My.Computer.Keyboard.ShiftKeyDown, Keys.Shift.ToString & " ", "")
-
                         If keysDown.Length > 0 And keysDown <> (Keys.Shift.ToString & " ") Then
                             builder.Append("<" & keysDown & lParam.vkCode.ToString & ">")
                         Else
                             If ret = 1 Then
-                                builder.Append(FinalChar.ToString)
+                                builder.Append(ChrW(vkCode))
                             Else
                                 builder.Append("<" & lParam.vkCode.ToString & ">")
                             End If

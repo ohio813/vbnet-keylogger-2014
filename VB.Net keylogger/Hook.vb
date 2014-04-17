@@ -18,14 +18,13 @@ Public Class Hook
         WH_KEYBOARD_LL = 13
         WH_MOUSE_LL = 14
     End Enum
-
+#Region "WindowsHook functions"
     'Import for the SetWindowsHookEx function.
     <DllImport("User32.dll", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)> _
     Private Overloads Shared Function SetWindowsHookEx _
           (ByVal HookType As HookType, ByVal HookProc As CallBack, _
            ByVal hInstance As IntPtr, ByVal wParam As Integer) As Integer
     End Function
-
     'Import for the CallNextHookEx function.
     <DllImport("User32.dll", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)> _
     Private Overloads Shared Function CallNextHookEx _
@@ -37,29 +36,26 @@ Public Class Hook
     Private Overloads Shared Function UnhookWindowsHookEx _
               (ByVal idHook As Integer) As Boolean
     End Function
-
+#End Region
     Private hHooks As New Dictionary(Of HookType, Integer)
-    Private hookproc As CallBack
     Public Sub Hook(hookType As HookType)
         If hHooks.ContainsKey(hookType) Then Return
         Select Case hookType
             Case Global.Hook.HookType.WH_KEYBOARD_LL
-                hookproc = AddressOf LowLevelKeyboardProc
-                hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_KEYBOARD_LL, hookproc, IntPtr.Zero, 0))
+                Dim Keyboardhookpro As CallBack = AddressOf LowLevelKeyboardProc
+                hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_KEYBOARD_LL, Keyboardhookpro, IntPtr.Zero, 0))
             Case Global.Hook.HookType.WH_MOUSE_LL
-                hookproc = AddressOf LowLevelMouseProc
-                hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_MOUSE_LL, hookproc, IntPtr.Zero, 0))
+                Dim Mousehookproc As CallBack = AddressOf LowLevelMouseProc
+                hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_MOUSE_LL, Mousehookproc, IntPtr.Zero, 0))
             Case Else
                 Throw New NotImplementedException()
         End Select
-
         If hHooks(hookType) = 0 Then
             Debug.Print("SetWindowsHookEx {0}", hookType.ToString)
             Return
         Else
             Debug.Print("SetWindowsHookEx {0}", hookType.ToString)
         End If
-
     End Sub
     Public Sub UnHook(hookType As HookType)
         If hHooks.ContainsKey(hookType) Then
