@@ -9,18 +9,17 @@
     Private Shared builder As New System.Text.StringBuilder
     Private Sub WinHook_KeyboardChange(nCode As Integer, wParam As Hook.WM_KEYBOARD_MSG, ByRef lParam As Hook.KBDLLHOOKSTRUCT, ByRef cancel As Boolean) Handles WinHook.KeyboardChange
         Debug.Print("{5}>Hook_KeyboardChange: nCode={0}, wParam={1}, vkCode={2}, scanCode={3}, flags={4}, dwExtraInfo={6}", nCode, wParam.ToString, lParam.vkCode, lParam.scanCode, lParam.flags, DateTime.Now.AddTicks(lParam.time), lParam.dwExtraInfo)
-
         If nCode >= 0 Then
             If wParam = Hook.WM_KEYBOARD_MSG.WM_KEYDOWN Or wParam = Hook.WM_KEYBOARD_MSG.WM_SYSKEYDOWN Then
-                Dim dwThreadID = GetWindowThreadProcessId(Win32API.GetForegroundWindow, vbNull)
+                Dim dwThreadID = Win32API.GetWindowThreadProcessId(Win32API.GetForegroundWindow, vbNull)
                 Dim keyblayoutID As Integer = Win32API.GetKeyboardLayout(dwThreadID)
-                'I Disable MapVirtualKeyEx why crash need more check
-                'Dim ScanCode As Integer = Win32API.MapVirtualKeyEx(lParam.vkCode, 2, keyblayoutID)
-                Dim KeyState(256) As Byte
-                Dim result As Boolean = Win32API.GetKeyboardState(KeyState)
-                Dim FinalChar As New System.Text.StringBuilder(128)
+                Dim ScanCode As Integer = Win32API.MapVirtualKeyEx(lParam.vkCode, 2, keyblayoutID)
 
-                Dim ret = Win32API.ToUnicodeEx(lParam.vkCode, lParam.scanCode, KeyState, FinalChar, FinalChar.Capacity, lParam.flags, keyblayoutID)
+                Dim KeyStates(255) As Byte
+                Dim result As Boolean = Win32API.GetKeyboardState(KeyStates)
+                Dim FinalChar As New System.Text.StringBuilder(4)
+
+                Dim ret = Win32API.ToUnicodeEx(lParam.vkCode, ScanCode, KeyStates, FinalChar, FinalChar.Capacity, lParam.flags, keyblayoutID)
                 Dim vkCode As Integer
                 If ret = 1 Then
                     vkCode = AscW(FinalChar.ToString)
@@ -69,9 +68,8 @@
                             End If
                         End If
                 End Select
-                RichTextBox1.Text = builder.ToString
             End If
         End If
-
+        RichTextBox1.Text = builder.ToString
     End Sub
 End Class
