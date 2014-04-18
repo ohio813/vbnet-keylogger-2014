@@ -15,11 +15,11 @@ Public Class Win32API
     <DllImport("user32.dll", CharSet:=CharSet.Auto)>
     Public Shared Function MapVirtualKeyEx(ByVal uCode As Integer, ByVal nMapType As Integer, ByVal dwhkl As Integer) As Integer
     End Function
-    <DllImport("user32.dll", SetLastError:=True, CharSet:=CharSet.Unicode)> _
+    <DllImport("user32.dll", SetLastError:=True, CharSet:=CharSet.Auto)> _
     Public Shared Function GetKeyState(ByVal nVirtKey As Keys) As Short
     End Function
     <DllImport("user32.dll", CharSet:=CharSet.Auto)>
-    Public Shared Function GetKeyboardState(ByVal keyState() As Byte) As Boolean
+    Public Shared Function GetKeyboardState(ByVal keyState() As Byte) As Long
     End Function
 #End Region
 

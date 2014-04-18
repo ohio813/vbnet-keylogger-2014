@@ -15,10 +15,11 @@
                 Dim keyblayoutID As Integer = Win32API.GetKeyboardLayout(dwThreadID)
                 Dim ScanCode As Integer = Win32API.MapVirtualKeyEx(lParam.vkCode, 2, keyblayoutID)
 
+                Dim CapitalState = CBool(Win32API.GetKeyState(Keys.Capital) And &H8000)
                 Dim KeyStates(255) As Byte
-                Dim result As Boolean = Win32API.GetKeyboardState(KeyStates)
-                Dim FinalChar As New System.Text.StringBuilder(4)
+                Win32API.GetKeyboardState(KeyStates)
 
+                Dim FinalChar As New System.Text.StringBuilder(4)
                 Dim ret = Win32API.ToUnicodeEx(lParam.vkCode, ScanCode, KeyStates, FinalChar, FinalChar.Capacity, lParam.flags, keyblayoutID)
                 Dim vkCode As Integer
                 If ret = 1 Then
