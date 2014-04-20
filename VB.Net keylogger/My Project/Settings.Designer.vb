@@ -53,6 +53,78 @@ Namespace My
                 Return defaultInstance
             End Get
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("0")>  _
+        Public Property TotalKeyboardClick() As Long
+            Get
+                Return CType(Me("TotalKeyboardClick"),Long)
+            End Get
+            Set
+                Me("TotalKeyboardClick") = value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(), _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(), _
+         Global.System.Configuration.DefaultSettingValueAttribute("0")> _
+        Public Property SessionKeyboardClick() As Long
+            Get
+                Return CType(Me("SessionKeyboardClick"), Long)
+            End Get
+            Set(value As Long)
+                Me("SessionKeyboardClick") = value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("0")>  _
+        Public Property TotalMouseMoves() As Long
+            Get
+                Return CType(Me("TotalMouseMoves"),Long)
+            End Get
+            Set
+                Me("TotalMouseMoves") = value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(), _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(), _
+         Global.System.Configuration.DefaultSettingValueAttribute("0")> _
+        Public Property SessionMouseMoves() As Long
+            Get
+                Return CType(Me("SessionMouseMoves"), Long)
+            End Get
+            Set(value As Long)
+                Me("SessionMouseMoves") = value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("0")>  _
+        Public Property TotalMouseClick() As Long
+            Get
+                Return CType(Me("TotalMouseClick"),Long)
+            End Get
+            Set
+                Me("TotalMouseClick") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("0")>  _
+        Public Property SessionMouseClick() As Long
+            Get
+                Return CType(Me("SessionMouseClick"),Long)
+            End Get
+            Set
+                Me("SessionMouseClick") = value
+            End Set
+        End Property
     End Class
 End Namespace
 

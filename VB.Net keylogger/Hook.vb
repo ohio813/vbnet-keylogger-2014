@@ -90,17 +90,18 @@ Public Class Hook
         Public time As UInt32
         Public dwExtraInfo As UIntPtr
     End Structure
-
     Public Event KeyboardChange(nCode As Integer, wParam As WM_KEYBOARD_MSG, ByRef lParam As KBDLLHOOKSTRUCT, ByRef cancel As Boolean)
     Private Function LowLevelKeyboardProc(ByVal nCode As Integer, ByVal wParam As IntPtr, ByVal lParam As IntPtr) As Integer
-
-        Dim cancel As Boolean = False
+        If wParam = WM_KEYBOARD_MSG.WM_KEYDOWN Or wParam = WM_KEYBOARD_MSG.WM_SYSKEYDOWN Then
+            My.Settings.TotalKeyboardClick += 1
+            My.Settings.Save()
+        End If
 
         Dim myKeyboardHookStruct As New KBDLLHOOKSTRUCT()
         myKeyboardHookStruct = CType(Marshal.PtrToStructure(lParam, myKeyboardHookStruct.GetType()), KBDLLHOOKSTRUCT)
 
+        Dim cancel As Boolean = False
         RaiseEvent KeyboardChange(nCode, wParam, myKeyboardHookStruct, cancel)
-
         If cancel = True Then
             Return 1
         Else
@@ -121,7 +122,6 @@ Public Class Hook
         WM_MOUSEWHEELUP = 519
         WM_MOUSEWHEELDOWN = 520
     End Enum
-
     'MouseHookStruct structure declaration.
     <StructLayout(LayoutKind.Sequential)> Public Structure MSLLHOOKSTRUCT
         Public pt As Drawing.Point
@@ -130,23 +130,22 @@ Public Class Hook
         Public time As UInt32
         Public dwExtraInfo As UInt64
     End Structure
-
     Public Event MouseChange(nCode As Integer, wParam As WM_MOUSE_MSG, lParam As MSLLHOOKSTRUCT, ByRef cancel As Boolean)
     Private Function LowLevelMouseProc(ByVal nCode As Integer, ByVal wParam As Integer, ByVal lParam As IntPtr) As Integer
-
-        Dim cancel As Boolean = False
+        If wParam = WM_MOUSE_MSG.WM_MOUSEMOVE Then My.Settings.TotalMouseMoves += 1
+        If wParam = WM_MOUSE_MSG.WM_LBUTTONDOWN Or wParam = WM_MOUSE_MSG.WM_RBUTTONDOWN Then My.Settings.TotalMouseClick += 1
+        My.Settings.Save()
 
         Dim myMouseHookStruct As New MSLLHOOKSTRUCT()
         myMouseHookStruct = CType(Marshal.PtrToStructure(lParam, myMouseHookStruct.GetType()), MSLLHOOKSTRUCT)
 
+        Dim cancel As Boolean = False
         RaiseEvent MouseChange(nCode, wParam, myMouseHookStruct, cancel)
-
         If cancel = True Then
             Return 1
         Else
             Return CallNextHookEx(hHooks(HookType.WH_MOUSE_LL), nCode, wParam, lParam)
         End If
-
     End Function
 #End Region
 
