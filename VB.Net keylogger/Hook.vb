@@ -136,7 +136,7 @@ Public Class Hook
         If cancel = True Then
             Return 1
         Else
-            Return CallNextHookEx(hHooks(HookType.WH_MOUSE_LL), nCode, wParam, Marshaling.ToIntPtr(myMouseHookStruct))
+            Return CallNextHookEx(hHooks(HookType.WH_MOUSE_LL), nCode, wParam, lParam)
         End If
     End Function
 #End Region
