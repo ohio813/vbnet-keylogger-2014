@@ -1,6 +1,7 @@
 ﻿Imports System.Runtime.InteropServices
 Public Class Hook
-    Private Delegate Function CallBack(ByVal nCode As Integer, ByVal wParam As IntPtr, ByVal lParam As IntPtr) As Integer
+    Private Delegate Function KeyboardCallBack(ByVal nCode As Integer, ByVal wParam As IntPtr, ByVal lParam As IntPtr) As Integer
+    Private Delegate Function MouseCallBack(ByVal nCode As Integer, ByVal wParam As IntPtr, ByVal lParam As IntPtr) As Integer
     Enum HookType As Integer
         WH_JOURNALRECORD = 0
         WH_JOURNALPLAYBACK = 1
@@ -20,31 +21,26 @@ Public Class Hook
     End Enum
 #Region "WindowsHook functions"
     'Import for the SetWindowsHookEx function.
-    <DllImport("User32.dll", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)> _
-    Private Overloads Shared Function SetWindowsHookEx _
-          (ByVal HookType As HookType, ByVal HookProc As CallBack, _
-           ByVal hInstance As IntPtr, ByVal wParam As Integer) As Integer
+    <DllImport("User32.dll", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)>
+    Private Overloads Shared Function SetWindowsHookEx(ByVal HookType As HookType, ByVal HookProc As [Delegate], ByVal hInstance As IntPtr, ByVal wParam As Integer) As Integer
     End Function
     'Import for the CallNextHookEx function.
-    <DllImport("User32.dll", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)> _
-    Private Overloads Shared Function CallNextHookEx _
-          (ByVal idHook As Integer, ByVal nCode As Integer, _
-           ByVal wParam As IntPtr, ByVal lParam As IntPtr) As Integer
+    <DllImport("User32.dll", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)>
+    Private Overloads Shared Function CallNextHookEx(ByVal idHook As Integer, ByVal nCode As Integer, ByVal wParam As IntPtr, ByVal lParam As IntPtr) As Integer
     End Function
     'Import for the UnhookWindowsHookEx function.
-    <DllImport("User32.dll", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)> _
-    Private Overloads Shared Function UnhookWindowsHookEx _
-              (ByVal idHook As Integer) As Boolean
+    <DllImport("User32.dll", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)>
+    Private Overloads Shared Function UnhookWindowsHookEx(ByVal idHook As Integer) As Boolean
     End Function
 #End Region
     Private hHooks As New Dictionary(Of HookType, Integer)
-    Private Keyboardhookpro As CallBack = AddressOf LowLevelKeyboardProc
-    Private Mousehookproc As CallBack = AddressOf LowLevelMouseProc
+    Private Keyboardhookproc As KeyboardCallBack = AddressOf LowLevelKeyboardProc
+    Private Mousehookproc As MouseCallBack = AddressOf LowLevelMouseProc
     Public Sub Hook(hookType As HookType)
         If hHooks.ContainsKey(hookType) Then Return
         Select Case hookType
             Case hookType.WH_KEYBOARD_LL
-                hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_KEYBOARD_LL, Keyboardhookpro, IntPtr.Zero, 0))
+                hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_KEYBOARD_LL, Keyboardhookproc, IntPtr.Zero, 0))
             Case hookType.WH_MOUSE_LL
                 hHooks.Add(hookType, SetWindowsHookEx(hookType.WH_MOUSE_LL, Mousehookproc, IntPtr.Zero, 0))
             Case Else
@@ -88,19 +84,12 @@ Public Class Hook
         Public scanCode As UInt32
         Public flags As KBDLLHOOKSTRUCTFlags
         Public time As UInt32
-        Public dwExtraInfo As UIntPtr
+        Public dwExtraInfo As UInt64
     End Structure
-    Public Event KeyboardChange(nCode As Integer, wParam As WM_KEYBOARD_MSG, ByRef lParam As KBDLLHOOKSTRUCT, ByRef cancel As Boolean)
+    Public Event KeyboardChange(nCode As Integer, ByVal wParam As WM_KEYBOARD_MSG, ByVal lParam As KBDLLHOOKSTRUCT, ByRef cancel As Boolean)
     Private Function LowLevelKeyboardProc(ByVal nCode As Integer, ByVal wParam As IntPtr, ByVal lParam As IntPtr) As Integer
-        If wParam = WM_KEYBOARD_MSG.WM_KEYDOWN Or wParam = WM_KEYBOARD_MSG.WM_SYSKEYDOWN Then
-            My.Settings.TotalKeyboardClick += 1
-            My.Settings.Save()
-        End If
-
-        Dim myKeyboardHookStruct As New KBDLLHOOKSTRUCT()
-        myKeyboardHookStruct = CType(Marshal.PtrToStructure(lParam, myKeyboardHookStruct.GetType()), KBDLLHOOKSTRUCT)
-
         Dim cancel As Boolean = False
+        Dim myKeyboardHookStruct As KBDLLHOOKSTRUCT = CType(Marshal.PtrToStructure(lParam, myKeyboardHookStruct.GetType()), KBDLLHOOKSTRUCT)
         RaiseEvent KeyboardChange(nCode, wParam, myKeyboardHookStruct, cancel)
         If cancel = True Then
             Return 1
@@ -115,12 +104,14 @@ Public Class Hook
         WM_MOUSEMOVE = &H200
         WM_LBUTTONDOWN = &H201
         WM_LBUTTONUP = &H202
-        WM_MOUSEWHEEL = &H20A
-        WM_MOUSEHWHEEL = &H20E
         WM_RBUTTONDOWN = &H204
         WM_RBUTTONUP = &H205
-        WM_MOUSEWHEELUP = 519
-        WM_MOUSEWHEELDOWN = 520
+        WM_MOUSEWHEELUP = &H207
+        WM_MOUSEWHEELDOWN = &H208
+        WM_MOUSEWHEEL = &H20A
+        WM_MOUSEWHEELMOVEUP = &H20B
+        WM_MOUSEWHEELMOVEDOWN = &H20C
+        WM_MOUSEHWHEEL = &H20E
     End Enum
     'MouseHookStruct structure declaration.
     <StructLayout(LayoutKind.Sequential)> Public Structure MSLLHOOKSTRUCT
@@ -128,23 +119,24 @@ Public Class Hook
         Public mouseData As UInt32
         Public flags As UInt32
         Public time As UInt32
-        Public dwExtraInfo As UInt64
+        Public dwExtraInfo As IntPtr
     End Structure
-    Public Event MouseChange(nCode As Integer, wParam As WM_MOUSE_MSG, lParam As MSLLHOOKSTRUCT, ByRef cancel As Boolean)
-    Private Function LowLevelMouseProc(ByVal nCode As Integer, ByVal wParam As Integer, ByVal lParam As IntPtr) As Integer
-        If wParam = WM_MOUSE_MSG.WM_MOUSEMOVE Then My.Settings.TotalMouseMoves += 1
-        If wParam = WM_MOUSE_MSG.WM_LBUTTONDOWN Or wParam = WM_MOUSE_MSG.WM_RBUTTONDOWN Then My.Settings.TotalMouseClick += 1
-        My.Settings.Save()
-
-        Dim myMouseHookStruct As New MSLLHOOKSTRUCT()
-        myMouseHookStruct = CType(Marshal.PtrToStructure(lParam, myMouseHookStruct.GetType()), MSLLHOOKSTRUCT)
-
+    Public Event MouseChange(nCode As Integer, ByVal wParam As WM_MOUSE_MSG, ByVal lParam As MSLLHOOKSTRUCT, ByRef cancel As Boolean)
+    Private Function LowLevelMouseProc(ByVal nCode As Integer, ByVal wParam As IntPtr, ByVal lParam As IntPtr) As Integer
+        Dim myMouseHookStruct As MSLLHOOKSTRUCT = CType(Marshal.PtrToStructure(lParam, myMouseHookStruct.GetType()), MSLLHOOKSTRUCT)
+        If wParam = WM_MOUSE_MSG.WM_MOUSEWHEEL Then
+            If myMouseHookStruct.mouseData = 7864320 Then
+                wParam = WM_MOUSE_MSG.WM_MOUSEWHEELMOVEUP
+            Else
+                wParam = WM_MOUSE_MSG.WM_MOUSEWHEELMOVEDOWN
+            End If
+        End If
         Dim cancel As Boolean = False
         RaiseEvent MouseChange(nCode, wParam, myMouseHookStruct, cancel)
         If cancel = True Then
             Return 1
         Else
-            Return CallNextHookEx(hHooks(HookType.WH_MOUSE_LL), nCode, wParam, lParam)
+            Return CallNextHookEx(hHooks(HookType.WH_MOUSE_LL), nCode, wParam, Marshaling.ToIntPtr(myMouseHookStruct))
         End If
     End Function
 #End Region
